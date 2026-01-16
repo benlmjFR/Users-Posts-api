@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 const publicUserSelect = {
   id: true,
@@ -32,6 +32,12 @@ export class UsersService {
   // READ ONE
   async getUser(id: number) {
     return this.findOrFail({ id });
+  }
+
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
   }
 
   // CREATE
@@ -104,6 +110,18 @@ export class UsersService {
         email: true,
       },
     });
+  }
+  async validateUser(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: publicUserSelect,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   // PRIVATE
