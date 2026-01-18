@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '../common/enums/role.enum';
 
 const publicUserSelect = {
   id: true,
   email: true,
   description: true,
   address: true,
+  role: true,
   phone: true,
   createdAt: true,
   updatedAt: true,
@@ -19,6 +21,14 @@ const publicUserSelect = {
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // UPDATE ROLE
+  async updateUserRole(userId: number, role: Role) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    });
+  }
 
   // READ ALL
   getAllUsers(page = 1, limit = 10) {

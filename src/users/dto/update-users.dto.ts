@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 // src/users/dto/update-user.dto.ts
 import {
   IsEmail,

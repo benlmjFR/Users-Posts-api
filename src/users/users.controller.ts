@@ -13,9 +13,12 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/roles/role.decorator';
+import { Role } from '../common/enums/role.enum';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Controller('users')
 export class UsersController {
@@ -47,11 +50,16 @@ export class UsersController {
   }
 
   /**
-   * POST /users
+   * PATCH /users/:id/role
    */
-  @Post()
-  createUser(@Body() data: CreateUserDto) {
-    return this.usersService.createUser(data);
+  @Patch(':id/role')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  updateRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateRoleDto,
+  ) {
+    return this.usersService.updateUserRole(id, dto.role as Role);
   }
 
   /**
