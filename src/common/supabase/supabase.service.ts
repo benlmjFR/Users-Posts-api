@@ -1,10 +1,29 @@
+// supabase.service.ts
 import { Injectable } from '@nestjs/common';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../supabase/supabase.client';
 
 @Injectable()
 export class SupabaseService {
-  client = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!, // IMPORTANT
-  );
+  async uploadFile(
+    bucket: string,
+    path: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file.buffer, {
+        contentType: file.mimetype,
+      });
+
+    if (error) {
+      console.error('❌ Supabase error:', error);
+      throw new Error(error.message);
+    }
+
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(path);
+
+    return data.publicUrl;
+  }
 }

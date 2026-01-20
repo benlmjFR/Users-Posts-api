@@ -38,17 +38,27 @@ export class PostsController {
 
   // UPLOAD PDF + VIDEO
   @Post(':id/media')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'pdfs', maxCount: 10 },
       { name: 'video', maxCount: 1 },
     ]),
   )
-  upload(
-    @Param('id', ParseIntPipe) postId: number,
-    @UploadedFiles() files: { pdfs?: Express.Multer.File[]; video?: Express.Multer.File[] },
+  async uploadMedia(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+    @UploadedFiles()
+    files: {
+      pdfs?: Express.Multer.File[];
+      video?: Express.Multer.File[];
+    },
   ) {
-    return this.postsService.uploadMedia(postId, files);
+    return this.postsService.uploadMedia(
+      Number(id),
+      req.user.id,
+      files,
+    );
   }
 
   // GET ALL POSTS

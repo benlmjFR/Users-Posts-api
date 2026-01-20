@@ -7,11 +7,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { Multer } from 'multer';
+import { SupabaseService } from '../common/supabase/supabase.service';
 
 
 @Injectable()
 export class PostsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly supabaseService: SupabaseService,
+  ) {}
 
   // CREATE POST
   async create(userId: number, dto: CreatePostDto) {
@@ -33,6 +37,7 @@ export class PostsService {
         author: {
           select: { id: true, email: true },
         },
+        postMedias: true,
       },
     });
   }
@@ -41,6 +46,9 @@ export class PostsService {
   async findByUser(userId: number) {
     return this.prisma.post.findMany({
       where: { authorId: userId },
+      include: {
+        postMedias: true
+    },
     });
   }
 
@@ -84,19 +92,72 @@ export class PostsService {
   }
 
   // UPLOAD MEDIA (placeholder)
-  async uploadMedia(
-    postId: number,
-    files: {
-      pdfs?: Express.Multer.File[];
-      video?: Express.Multer.File[];
-    },
-  ) {
-    // 👉 HERE WE LINK SUPABASE Storage
-    return {
-      postId,
-      pdfs: files.pdfs?.length ?? 0,
-      video: files.video?.length ?? 0,
-    };
+ async uploadMedia(
+  postId: number,
+  userId: number,
+  files: {
+    pdfs?: Express.Multer.File[];
+    video?: Express.Multer.File[];
+  },
+) {
+  const post = await this.prisma.post.findUnique({
+    where: { id: postId },
+  });
+
+  if (!post) throw new NotFoundException('Post not found');
+  if (post.authorId !== userId)
+    throw new ForbiddenException('Not your post');
+
+  const createdMedias = [];
+
+  // PDFs
+  for (const file of files.pdfs ?? []) {
+    const path = `posts/${postId}/pdfs/${Date.now()}-${file.originalname}`;
+
+    const publicUrl = await this.supabaseService.uploadFile(
+      'posts-pdfs',
+      path,
+      file,
+    );
+
+    const media = await this.prisma.postMedia.create({
+      data: {
+        postId,
+        type: 'PDF',
+        url: publicUrl,
+        name: file.originalname,
+        size: file.size,
+      },
+    });
+
+    createdMedias.push(media);
   }
+
+  // VIDEO
+  if (files.video?.[0]) {
+    const file = files.video[0];
+    const path = `posts/${postId}/video/${Date.now()}-${file.originalname}`;
+
+    const publicUrl = await this.supabaseService.uploadFile(
+      'posts-videos',
+      path,
+      file,
+    );
+
+    const media = await this.prisma.postMedia.create({
+      data: {
+        postId,
+        type: 'VIDEO',
+        url: publicUrl,
+        name: file.originalname,
+        size: file.size,
+      },
+    });
+
+    createdMedias.push(media);
+  }
+
+  return createdMedias;
+ }
 }
 
