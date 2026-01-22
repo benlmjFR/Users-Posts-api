@@ -31,8 +31,10 @@ model User {
 
   posts Post[]
 
-  createdAt DateTime @map("created_at")
-  updatedAt DateTime @map("updated_at")
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("User")
 }
 
 model Post {
@@ -44,10 +46,12 @@ model Post {
   authorId Int
   author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @map("created_at")
-  updatedAt DateTime @map("updated_at")
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
 
   postMedias PostMedia[]
+
+  @@map("Post")
 }
 
 model PostMedia {
@@ -60,7 +64,9 @@ model PostMedia {
   name String?
   size Int?
 
-  createdAt DateTime @map("created_at")
+  createdAt DateTime? @map("created_at")
+
+  @@map("PostMedia")
 }
 
 enum MediaType {
