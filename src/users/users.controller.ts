@@ -36,6 +36,7 @@ export class UsersController {
   /**
    * GET /users?page=1&limit=10
    */
+  @UseGuards(JwtAuthGuard)
   @Get()
   getAllUsers(@Query('page') page = 1, @Query('limit') limit = 10) {
     return this.usersService.getAllUsers(+page, +limit);
