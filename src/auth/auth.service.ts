@@ -41,7 +41,13 @@ export class AuthService {
         access_token: this.jwtService.sign(payload),
       };
     } catch (error) {
+      console.error('REGISTER ERROR:', error);
+
+      if ((error as any)?.code  === 'P2002') {
       throw new ConflictException('Email already exists');
+    }
+
+    throw error;
     }
   }
 
