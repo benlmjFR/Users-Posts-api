@@ -8,7 +8,6 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { Multer } from 'multer';
 import { SupabaseService } from '../common/supabase/supabase.service';
-import { UpdatePostMediaDto } from './dto/update-post-media.dto';
 
 
 @Injectable()
