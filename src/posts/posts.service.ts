@@ -37,7 +37,7 @@ export class PostsService {
         author: {
           select: { id: true, email: true },
         },
-        postMedias: true,
+        medias: true,
       },
     });
   }
@@ -47,7 +47,7 @@ export class PostsService {
     return this.prisma.post.findMany({
       where: { authorId: userId },
       include: {
-        postMedias: true
+        medias: true
     },
     });
   }
