@@ -24,6 +24,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { UpdatePostMediaDto } from './dto/update-post-media.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
@@ -60,6 +61,24 @@ export class PostsController {
       files,
     );
   }
+
+  @Patch('media/:mediaId')
+  updateMedia(
+  @Param('mediaId', ParseIntPipe) mediaId: number,
+  @Body() dto: UpdatePostMediaDto,
+  @Req() req: AuthenticatedRequest,
+  ) {
+  return this.postsService.updateMedia(mediaId, req.user.id, dto);
+ }
+
+
+  @Delete('media/:mediaId')
+  removeMedia(
+  @Param('mediaId', ParseIntPipe) mediaId: number,
+  @Req() req: AuthenticatedRequest,
+  ) {
+  return this.postsService.removeMedia(mediaId, req.user.id);
+ }
 
   // GET ALL POSTS
   @Get()

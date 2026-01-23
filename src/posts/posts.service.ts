@@ -8,6 +8,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { Multer } from 'multer';
 import { SupabaseService } from '../common/supabase/supabase.service';
+import { UpdatePostMediaDto } from './dto/update-post-media.dto';
 
 
 @Injectable()
@@ -159,5 +160,41 @@ export class PostsService {
 
   return createdMedias;
  }
+
+ async removeMedia(mediaId: number, userId: number) {
+  const media = await this.prisma.postMedia.findUnique({
+    where: { id: mediaId },
+    include: { post: true },
+  });
+
+  if (!media || media.post.authorId !== userId) {
+    throw new ForbiddenException();
+  }
+
+  return this.prisma.postMedia.delete({
+    where: { id: mediaId },
+  });
+ }
+
+ async updateMedia(
+  mediaId: number,
+  userId: number,
+  dto: UpdatePostMediaDto,
+) {
+  const media = await this.prisma.postMedia.findUnique({
+    where: { id: mediaId },
+    include: { post: true },
+  });
+
+  if (!media || media.post.authorId !== userId) {
+    throw new ForbiddenException();
+  }
+
+  return this.prisma.postMedia.update({
+    where: { id: mediaId },
+    data: dto,
+  });
+ }
 }
+
 
