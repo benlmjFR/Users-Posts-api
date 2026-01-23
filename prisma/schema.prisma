@@ -43,20 +43,20 @@ model Post {
   content   String?
   published Boolean @default(false)
 
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId Int  @map("author_id")
+  author   User @relation(fields: [authorId], references: [id])
 
-  createdAt DateTime? @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  createdAt  DateTime    @map("created_at")
+  updatedAt  DateTime    @map("updated_at")
   postMedias PostMedia[]
 
   @@map("Post")
 }
 
 model PostMedia {
-  id     Int  @id @default(autoincrement())
-  postId Int
+  id Int @id @default(autoincrement())
+
+  postId Int  @map("post_id")
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   type MediaType
