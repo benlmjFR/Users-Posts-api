@@ -47,10 +47,15 @@ export class AuthService {
 
   // LOGIN
   async login(dto: LoginDto) {
+  try {
     const user = await this.usersService.findByEmail(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.password) {
+      throw new Error('User password is null');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
@@ -62,10 +67,15 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
+      role: user.role,
     };
 
     return {
       access_token: this.jwtService.sign(payload),
     };
+  } catch (err) {
+    console.error('LOGIN ERROR:', err);
+    throw err;
   }
+ }
 }
