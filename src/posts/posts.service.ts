@@ -175,26 +175,6 @@ export class PostsService {
     where: { id: mediaId },
   });
  }
-
- async updateMedia(
-  mediaId: number,
-  userId: number,
-  dto: UpdatePostMediaDto,
-) {
-  const media = await this.prisma.postMedia.findUnique({
-    where: { id: mediaId },
-    include: { post: true },
-  });
-
-  if (!media || media.post.authorId !== userId) {
-    throw new ForbiddenException();
-  }
-
-  return this.prisma.postMedia.update({
-    where: { id: mediaId },
-    data: dto,
-  });
- }
 }
 
 

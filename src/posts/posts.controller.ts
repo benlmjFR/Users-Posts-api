@@ -62,16 +62,6 @@ export class PostsController {
     );
   }
 
-  @Patch('media/:mediaId')
-  updateMedia(
-  @Param('mediaId', ParseIntPipe) mediaId: number,
-  @Body() dto: UpdatePostMediaDto,
-  @Req() req: AuthenticatedRequest,
-  ) {
-  return this.postsService.updateMedia(mediaId, req.user.id, dto);
- }
-
-
   @Delete('media/:mediaId')
   removeMedia(
   @Param('mediaId', ParseIntPipe) mediaId: number,
