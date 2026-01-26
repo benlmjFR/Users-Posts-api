@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/auth/auth.service.ts
+
 import {
   ConflictException,
   Injectable,
@@ -11,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -18,9 +20,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // REGISTER
+  // =========================
+  // REGISTER (EMAIL + PASSWORD)
+  // =========================
   async register(dto: RegisterDto) {
-    // SALTROUNDS = 10
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     try {
@@ -43,32 +46,70 @@ export class AuthService {
     } catch (error) {
       console.error('REGISTER ERROR:', error);
 
-      if ((error as any)?.code  === 'P2002') {
-      throw new ConflictException('Email already exists');
-    }
+      if ((error as any)?.code === 'P2002') {
+        throw new ConflictException('Email already exists');
+      }
 
-    throw error;
+      throw error;
     }
   }
 
-  // LOGIN
+  // =========================
+  // LOGIN (EMAIL + PASSWORD)
+  // =========================
   async login(dto: LoginDto) {
-  try {
-    const user = await this.usersService.findByEmail(dto.email);
+    try {
+      const user = await this.usersService.findByEmail(dto.email);
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // 🔐 Compte OAuth → pas de password
+      if (!user.password) {
+        throw new UnauthorizedException(
+          'This account uses Google authentication',
+        );
+      }
+
+      const passwordValid = await bcrypt.compare(dto.password, user.password);
+
+      if (!passwordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      };
+
+      return {
+        access_token: this.jwtService.sign(payload),
+      };
+    } catch (err) {
+      console.error('LOGIN ERROR:', err);
+      throw err;
     }
+  }
 
-    if (!user.password) {
-      throw new Error('User password is null');
-    }
-
-    const passwordValid = await bcrypt.compare(dto.password, user.password);
-
-    if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+  // =========================
+  // LOGIN / REGISTER (GOOGLE OAUTH)
+  // =========================
+  async loginWithGoogle(profile: {
+    email: string;
+    googleId: string;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+  }) {
+    const user = await this.usersService.upsertGoogleUser({
+      email: profile.email,
+      googleId: profile.googleId,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatar: profile.avatar,
+    });
 
     const payload = {
       sub: user.id,
@@ -79,9 +120,5 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
     };
-  } catch (err) {
-    console.error('LOGIN ERROR:', err);
-    throw err;
   }
- }
 }
