@@ -19,20 +19,27 @@ enum SubscriptionStatus {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String // Hashed password
+  id    Int    @id @default(autoincrement())
+  email String @unique
+
+  password String?
+  googleId String? @unique
+
+  firstName String?
+  lastName  String?
+  avatar    String?
 
   role         Role               @default(USER)
   subscription SubscriptionStatus @default(FREE)
-  description  String?
-  address      String?
-  phone        String?
 
-  posts Post[]
+  description String?
+  address     String?
+  phone       String?
 
   createdAt DateTime? @map("created_at")
   updatedAt DateTime? @map("updated_at")
+
+  posts Post[]
 
   @@map("User")
 }

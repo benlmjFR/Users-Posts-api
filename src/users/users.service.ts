@@ -14,6 +14,9 @@ const publicUserSelect = {
   address: true,
   role: true,
   phone: true,
+  firstName: true,
+  lastName: true,
+  avatar: true,
   createdAt: true,
   updatedAt: true,
 };
@@ -22,7 +25,9 @@ const publicUserSelect = {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // =========================
   // UPDATE ROLE
+  // =========================
   async updateUserRole(userId: number, role: Role) {
     return this.prisma.user.update({
       where: { id: userId },
@@ -30,7 +35,9 @@ export class UsersService {
     });
   }
 
+  // =========================
   // READ ALL
+  // =========================
   getAllUsers(page = 1, limit = 10) {
     return this.prisma.user.findMany({
       skip: (page - 1) * limit,
@@ -39,18 +46,25 @@ export class UsersService {
     });
   }
 
+  // =========================
   // READ ONE
+  // =========================
   async getUser(id: number) {
     return this.findOrFail({ id });
   }
 
+  // =========================
+  // FIND BY EMAIL
+  // =========================
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
     });
   }
 
-  // CREATE
+  // =========================
+  // CREATE (EMAIL / PASSWORD)
+  // =========================
   async createUser(data: Prisma.UserCreateInput) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -66,7 +80,6 @@ export class UsersService {
         select: publicUserSelect,
       });
     } catch (error) {
-      // Security DB (race condition)
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
@@ -77,7 +90,9 @@ export class UsersService {
     }
   }
 
+  // =========================
   // UPDATE
+  // =========================
   async updateUser(id: number, data: Prisma.UserUpdateInput) {
     await this.findOrFail({ id });
 
@@ -109,7 +124,9 @@ export class UsersService {
     }
   }
 
+  // =========================
   // DELETE
+  // =========================
   async deleteUser(id: number) {
     await this.findOrFail({ id });
 
@@ -121,6 +138,10 @@ export class UsersService {
       },
     });
   }
+
+  // =========================
+  // VALIDATE USER (JWT)
+  // =========================
   async validateUser(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -134,7 +155,40 @@ export class UsersService {
     return user;
   }
 
+  // =========================
+  // GOOGLE OAUTH UPSERT
+  // =========================
+  async upsertGoogleUser(data: {
+    email: string;
+    googleId: string;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+  }) {
+    return this.prisma.user.upsert({
+      where: { email: data.email },
+      update: {
+        googleId: data.googleId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        avatar: data.avatar,
+      },
+      create: {
+        email: data.email,
+        googleId: data.googleId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        avatar: data.avatar,
+        password: null,
+        role: Role.USER,
+      },
+      select: publicUserSelect,
+    });
+  }
+
+  // =========================
   // PRIVATE
+  // =========================
   private async findOrFail(where: Prisma.UserWhereUniqueInput) {
     const user = await this.prisma.user.findUnique({
       where,
