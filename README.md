@@ -26,7 +26,7 @@ The backend follows a **modular architecture**, where each domain is isolated an
 Swagger UI is available at:
 
 ```text
-https://nest-prisma-skcale-api-production.up.railway.app/api
+https://users-posts-api.up.railway.app/api
 ```
 
 ## 🔐 Authentication
@@ -34,5 +34,5 @@ https://nest-prisma-skcale-api-production.up.railway.app/api
 ### Google OAuth (auth Endpoint)
 
 ```text
-https://nest-prisma-skcale-api-production.up.railway.app/auth/google
+https://users-posts-api.up.railway.app/auth/google
 ```
