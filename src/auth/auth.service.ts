@@ -65,7 +65,6 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      // 🔐 Compte OAuth → pas de password
       if (!user.password) {
         throw new UnauthorizedException(
           'This account uses Google authentication',
