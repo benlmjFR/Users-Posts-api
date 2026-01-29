@@ -41,8 +41,8 @@ export class AuthController {
     // Cookie
     res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'none',
       path: '/',
     });
   if (!process.env.FRONT_CALLBACK_URL) {
