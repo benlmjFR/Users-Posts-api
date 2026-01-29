@@ -13,7 +13,7 @@ async function bootstrap() {
   // ✅ CORS
   app.enableCors({
     origin: [
-      'https://users-posts-front-cs8igrvf6-bens-projects-cb9828d1.vercel.app',
+      'https://users-posts-front.vercel.app',
       'http://localhost:3000',
     ],
     credentials: true,
