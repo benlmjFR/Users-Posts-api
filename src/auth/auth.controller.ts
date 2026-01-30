@@ -49,7 +49,7 @@ export class AuthController {
   throw new Error('FRONT_CALLBACK_URL is not defined');
 }
 
-    // Redirection to front profile pae
-    res.redirect(process.env.FRONT_CALLBACK_URL as string);
+    res.redirect(
+  `${process.env.FRONT_CALLBACK_URL}?token=${access_token}`);
   }
 }
